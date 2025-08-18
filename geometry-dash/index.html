@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Mini Geometry Dash</title>
+  <style>
+    body { margin:0; display:flex; justify-content:center; align-items:center; flex-direction:column; background:#333; font-family:Arial; color:white; }
+    canvas { background:#444; margin-top:10px; }
+    #restartBtn, #levelSelector { margin:10px; padding:10px 20px; font-size:18px; border-radius:5px; cursor:pointer; }
+  </style>
+</head>
+<body>
+  <h1>Mini Geometry Dash</h1>
+  <div>
+    <label for="levelSelector">Choose Level:</label>
+    <select id="levelSelector">
+      <option value="0">Easy 1</option>
+      <option value="1">Easy 2</option>
+      <option value="2">Easy 3</option>
+      <option value="3">Medium 1</option>
+      <option value="4">Medium 2</option>
+      <option value="5">Medium 3</option>
+      <option value="6">Hard 1</option>
+      <option value="7">Hard 2</option>
+      <option value="8">Hard 3</option>
+    </select>
+    <button id="startBtn">Start</button>
+  </div>
+  <canvas id="gameCanvas" width="600" height="300"></canvas>
+  <button id="restartBtn" style="display:none;">Restart</button>
+
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    const restartBtn = document.getElementById("restartBtn");
+    const startBtn = document.getElementById("startBtn");
+    const levelSelector = document.getElementById("levelSelector");
+
+    let player = { x:50, y:250, width:30, height:30, vy:0, gravity:0.8, jump:-12 };
+    let obstacles = [];
+    let gamePaused = true;
+    let levelIndex = 0;
+    let score = 0;
+    let levelData = [
+      {speed:2, gap:300}, {speed:2.5, gap:280}, {speed:3, gap:260}, // Easy
+      {speed:4, gap:250}, {speed:4.5, gap:220}, {speed:5, gap:200}, // Medium
+      {speed:6, gap:180}, {speed:7, gap:160}, {speed:8, gap:140}    // Hard
+    ];
+
+    function startGame() {
+      levelIndex = parseInt(levelSelector.value);
+      obstacles = [];
+      player.y = 250;
+      player.vy = 0;
+      score = 0;
+      gamePaused = false;
+      restartBtn.style.display = "none";
+      spawnObstacle();
+      update();
+    }
+
+    function spawnObstacle() {
+      let level = levelData[levelIndex];
+      let lastX = obstacles.length ? obstacles[obstacles.length-1].x : canvas.width;
+      obstacles.push({ x: lastX + level.gap, y: 270, width: 30, height: 30 });
+      if(!gamePaused){
+        setTimeout(spawnObstacle, level.gap * 10); // timing depends on gap
+      }
+    }
+
+    function update() {
+      if(gamePaused) return;
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+
+      // Player
+      player.vy += player.gravity;
+      player.y += player.vy;
+      if(player.y > 270) { player.y = 270; player.vy = 0; }
+
+      ctx.fillStyle = "cyan";
+      ctx.fillRect(player.x, player.y, player.width, player.height);
+
+      // Obstacles
+      let level = levelData[levelIndex];
+      ctx.fillStyle = "red";
+      obstacles.forEach((obs,i)=>{
+        obs.x -= level.speed;
+        ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
+
+        // Collision
+        if(player.x < obs.x + obs.width && player.x + player.width > obs.x &&
+           player.y < obs.y + obs.height && player.y + player.height > obs.y){
+             gameOver();
+        }
+
+        // Remove passed obstacles
+        if(obs.x + obs.width < 0) { obstacles.splice(i,1); score++; }
+      });
+
+      // Score
+      ctx.fillStyle = "white";
+      ctx.font = "20px Arial";
+      ctx.fillText("Score: "+score, 10, 20);
+
+      requestAnimationFrame(update);
+    }
+
+    function gameOver(){
+      gamePaused = true;
+      restartBtn.style.display = "block";
+    }
+
+    document.addEventListener("keydown", e=>{
+      if(e.key===" " || e.key==="ArrowUp") { if(!gamePaused && player.y === 270) player.vy = player.jump; }
+    });
+    document.addEventListener("click", e=>{
+      if(!gamePaused && player.y === 270) player.vy = player.jump;
+    });
+
+    restartBtn.addEventListener("click", startGame);
+    startBtn.addEventListener("click", startGame);
+  </script>
+</body>
+</html>

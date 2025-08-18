@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Clicker Game</title>
+  <style>
+    body {
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      height:100vh;
+      margin:0;
+      font-family: Arial, sans-serif;
+      background: #70c5ce;
+    }
+    #clickButton {
+      padding: 20px 40px;
+      font-size: 24px;
+      margin: 20px;
+      cursor: pointer;
+      border-radius: 10px;
+    }
+    #score {
+      font-size: 30px;
+      margin-top: 20px;
+    }
+    #upgradeBtn {
+      padding: 10px 20px;
+      font-size: 18px;
+      cursor: pointer;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Clicker Game</h1>
+  <button id="clickButton">Click Me!</button>
+  <div id="score">Points: 0</div>
+  <button id="upgradeBtn">Upgrade (+1 per click) - Cost: 50</button>
+
+  <script>
+    let points = 0;
+    let pointsPerClick = 1;
+    let upgradeCost = 50;
+
+    const clickButton = document.getElementById("clickButton");
+    const scoreDisplay = document.getElementById("score");
+    const upgradeBtn = document.getElementById("upgradeBtn");
+
+    clickButton.addEventListener("click", () => {
+      points += pointsPerClick;
+      updateScore();
+    });
+
+    upgradeBtn.addEventListener("click", () => {
+      if(points >= upgradeCost){
+        points -= upgradeCost;
+        pointsPerClick += 1;
+        upgradeCost = Math.floor(upgradeCost * 1.5);
+        upgradeBtn.textContent = `Upgrade (+1 per click) - Cost: ${upgradeCost}`;
+        updateScore();
+      }
+    });
+
+    function updateScore(){
+      scoreDisplay.textContent = `Points: ${points}`;
+    }
+  </script>
+</body>
+</html>
